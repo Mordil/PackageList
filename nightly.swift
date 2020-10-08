@@ -132,17 +132,18 @@ func downloadSync(url: String) -> Result<Data, ValidatorError> {
         
     }
     
-    task.resume()
+    DispatchQueue.global().async {
+        task.resume()
+    }
     
-    semaphore.wait()
-
-    if let error = taskError {
-        return .failure(error)
+    switch semaphore.wait(timeout: .now() + .seconds(5)) {
+        case .timedOut:
+            return .failure(.timedOut)
+        case .success where taskError != nil:
+            return .failure(taskError!)
+        case .success:
+            return .success(payload!)
     }
-    guard let data = payload else {
-        return .failure(.noData)
-    }
-    return .success(data)
 }
 
 func downloadJSONSync<Payload: Decodable>(url: String) -> Result<Payload, ValidatorError> {
