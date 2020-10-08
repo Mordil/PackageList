@@ -92,7 +92,8 @@ enum ValidatorError: Error {
 
 // MARK: - Networking
 
-func downloadSync(url: String, timeout: Int = 30) -> Result<Data, ValidatorError> {
+func downloadSync(url: String, timeout: Int = 10) -> Result<Data, ValidatorError> {
+    print("Fetching \(url) ...")
     let semaphore = DispatchSemaphore(value: 0)
     
     guard let apiURL = URL(string: url) else {
@@ -454,7 +455,7 @@ class PackageFetcher {
             process.terminate()
         }
         
-        return result ?? .failure(.dumpTimedOut)
+        return result ?? .failure(.timedOut)
     }
     
 }
@@ -563,8 +564,8 @@ do {
     filteredPackages
         .prefix(PREFIX)
         .enumerated().forEach { (idx, url) in
-        if idx % 100 == 0 {
-            print("INFO: Processing package \(idx) ...")
+        if idx % 1 == 0 {
+            print("INFO: Processing package \(idx): \(url.absoluteString) ...")
         }
 
         do {
@@ -573,7 +574,7 @@ do {
             
             package.package.dependencies.forEach { allDependencies.insert($0) }
         } catch {
-            print("ERROR: Failed to obtain package information for \(url.path)")
+            print("ERROR: Failed to obtain package information for \(url.absoluteString)")
             print(error)
         }
     }
