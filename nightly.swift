@@ -347,7 +347,12 @@ class PackageFetcher {
     
     func fetch() -> Result<SwiftPackage, ValidatorError> {
         do {
-            let repo = try fetchRepository().get()
+            var r: Repository?
+            try repeatedly("fetchRepository", retries: 3) {
+                r = try fetchRepository().get()
+                return .success
+            }
+            guard let repo = r else { throw ValidatorError.timedOut }
             let packageURL = try getPackageSwiftURL(repository: repo).get()
             let packageLocalURL = try downloadPackageSwift(url: packageURL).get()
             let packageData = try dumpPackage(atURL: packageLocalURL).get()
@@ -557,6 +562,31 @@ if false {
 //
 // The goal of this step is to identify dependenices of known packages which are themselves unknown to our list increasing
 // our coverage.
+
+
+func delay(retryCount: Int) -> UInt32 {
+    (pow(2, max(0, retryCount - 1)) * Decimal(5) as NSDecimalNumber).uint32Value
+}
+
+
+enum RetryResult {
+    case success
+    case failure
+}
+
+func repeatedly(_ label: String, retries: Int = 5, _ block: () throws -> RetryResult) throws {
+    var currentTry = 1
+    while currentTry <= retries {
+        print("\(label) (attempt \(currentTry))")
+        if try block() == .success { return }
+        let wait = delay(retryCount: currentTry)
+        print("Retrying in \(wait) seconds ...")
+        sleep(wait)
+        currentTry += 1
+    }
+    throw ValidatorError.timedOut
+}
+
 
 do {
     print("INFO: Starting dependency analysis ...")
