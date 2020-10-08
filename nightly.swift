@@ -92,7 +92,7 @@ enum ValidatorError: Error {
 
 // MARK: - Networking
 
-func downloadSync(url: String, timeout: Int = 10) -> Result<Data, ValidatorError> {
+func downloadSync(url: String, timeout: Int = 30) -> Result<Data, ValidatorError> {
     let semaphore = DispatchSemaphore(value: 0)
     
     guard let apiURL = URL(string: url) else {
@@ -454,7 +454,7 @@ class PackageFetcher {
             process.terminate()
         }
         
-        return result ?? .failure(.timedOut)
+        return result ?? .failure(.dumpTimedOut)
     }
     
 }
