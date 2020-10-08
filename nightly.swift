@@ -26,12 +26,12 @@ if patToken == nil {
     print("Warning: Using anonymous authentication -- you will quickly run into rate limiting issues\n")
 }
 
-let config: URLSessionConfiguration = .default
-config.timeoutIntervalForRequest = timeoutIntervalForRequest
-config.timeoutIntervalForResource = timeoutIntervalForResource
-config.httpMaximumConnectionsPerHost = httpMaximumConnectionsPerHost
+// let config: URLSessionConfiguration = .default
+// config.timeoutIntervalForRequest = timeoutIntervalForRequest
+// config.timeoutIntervalForResource = timeoutIntervalForResource
+// config.httpMaximumConnectionsPerHost = httpMaximumConnectionsPerHost
 
-let session = URLSession(configuration: config)
+let session = URLSession(configuration: .default)
 
 enum SourceHost: String {
     case GitHub = "github.com"
@@ -92,7 +92,7 @@ enum ValidatorError: Error {
 
 // MARK: - Networking
 
-func downloadSync(url: String, timeout: Int = 10) -> Result<Data, ValidatorError> {
+func downloadSync(url: String) -> Result<Data, ValidatorError> {
     print("Fetching \(url) ...")
     let semaphore = DispatchSemaphore(value: 0)
     
@@ -134,21 +134,20 @@ func downloadSync(url: String, timeout: Int = 10) -> Result<Data, ValidatorError
     
     task.resume()
     
-    switch semaphore.wait(timeout: .now() + .seconds(timeout)) {
-    case .timedOut:
-        return .failure(.timedOut)
-    case .success where taskError != nil:
-        return .failure(taskError!)
-    case .success where payload == nil:
-        return .failure(.noData)
-    case .success:
-        return .success(payload!)
+    semaphore.wait()
+
+    if let error = taskError {
+        return .failure(error)
     }
+    guard let data = payload else {
+        return .failure(.noData)
+    }
+    return .success(data)
 }
 
-func downloadJSONSync<Payload: Decodable>(url: String, timeout: Int = 10) -> Result<Payload, ValidatorError> {
+func downloadJSONSync<Payload: Decodable>(url: String) -> Result<Payload, ValidatorError> {
     let decoder = JSONDecoder()
-    let result = downloadSync(url: url, timeout: timeout)
+    let result = downloadSync(url: url)
     
     switch result {
     case .failure(let error):
