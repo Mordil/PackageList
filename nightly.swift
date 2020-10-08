@@ -105,7 +105,7 @@ func downloadSync(url: String, timeout: Int = 10) -> Result<Data, ValidatorError
     
     var request = URLRequest(url: apiURL)
     
-    if let token = patToken, apiURL.host?.contains(SourceHost.GitHub.rawValue) == true {
+    if let token = patToken, apiURL.absoluteString.starts(with: "https://api.github.com") {
         request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     }
     
@@ -485,7 +485,7 @@ if filteredPackages.count != originalPackages.count {
 // We will attempt to load the HTML URL (the URL minus the .git extension) and follow any redirects that occur.
 // If we 404 (Not Found) then we remove the URL from the package list. If the URL we end up on is not the same as the
 // one we have listed then we replace it with the new URL to keep our list as accurate as possible.
-do {
+if false {
     print("INFO: Checking for redirects and 404s ...")
     let tempStorage = filteredPackages
     var lastRequestDate = Date()
