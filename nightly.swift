@@ -461,6 +461,8 @@ class PackageFetcher {
 
 // MARK: - Running Code
 
+let PREFIX = 10
+
 // Get the current directory
 let currentDirectory = URL(fileURLWithPath: fileManager.currentDirectoryPath)
 
@@ -486,7 +488,9 @@ do {
     print("INFO: Checking for redirects and 404s ...")
     let tempStorage = filteredPackages
     var lastRequestDate = Date()
-    tempStorage.enumerated().forEach { (idx, url) in
+    tempStorage
+        .prefix(PREFIX)
+        .enumerated().forEach { (idx, url) in
         if idx % 100 == 0 {
             print("INFO: Processing package \(idx) ...")
         }
@@ -556,7 +560,9 @@ do {
 do {
     print("INFO: Starting dependency analysis ...")
     var allDependencies = Set<Dependency>()
-    filteredPackages.enumerated().forEach { (idx, url) in
+    filteredPackages
+        .prefix(PREFIX)
+        .enumerated().forEach { (idx, url) in
         if idx % 100 == 0 {
             print("INFO: Processing package \(idx) ...")
         }
@@ -574,6 +580,7 @@ do {
     
     let normalisedURLs = filteredPackages.map { $0.normalised() }
     let uniqueDependencies = allDependencies.filter { normalisedURLs.contains($0.url.normalised()) == false }
+        .prefix(PREFIX)
     print("INFO: Found \(allDependencies.count) dependencies from \(filteredPackages.count) packages. \(uniqueDependencies.count) are unique.")
     
     uniqueDependencies.forEach { dependency in
