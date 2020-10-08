@@ -398,8 +398,8 @@ class PackageFetcher {
     
     private func dumpPackageProcessAt(_ packageDirectoryURL: URL, outputTo pipe: Pipe, errorsTo errorPipe: Pipe) -> Process {
         let process = Process()
-        process.launchPath = "/usr/bin/swift"
-        process.arguments = ["package", "dump-package"]
+        process.launchPath = "/usr/bin/xcrun"
+        process.arguments = ["swift", "package", "dump-package"]
         process.currentDirectoryURL = packageDirectoryURL
         process.standardOutput = pipe
         process.standardError = errorPipe
