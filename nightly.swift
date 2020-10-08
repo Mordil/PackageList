@@ -138,6 +138,10 @@ func downloadSync(url: String) -> Result<Data, ValidatorError> {
     
     switch semaphore.wait(timeout: .now() + .seconds(5)) {
         case .timedOut:
+            if let data = payload {
+                print("⚠️  time out but payload not nil -> returning success")
+                return .success(data)
+            }
             return .failure(.timedOut)
         case .success where taskError != nil:
             return .failure(taskError!)
