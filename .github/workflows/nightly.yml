@@ -7,17 +7,19 @@ on:
 
 jobs:
   run_nightly:
-    runs-on: self-hosted
+    runs-on: macos-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Run nightly script
-      run: env DEVELOPER_DIR="/Applications/Xcode_12.0.app" xcrun swift nightly.swift
+      run: xcrun swift nightly.swift
       env:
+        DEVELOPER_DIR: /Applications/Xcode_12.app
         GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
     - name: Run validation script
-      run: env DEVELOPER_DIR="/Applications/Xcode_12.0.app" xcrun swift validate.swift
+      run: xcrun swift validate.swift
       env:
+        DEVELOPER_DIR: /Applications/Xcode_12.app
         GH_API_TOKEN: ${{ secrets.GH_API_TOKEN }}
     - name: Create Pull Request
       id: cpr
