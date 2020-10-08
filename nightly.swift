@@ -349,8 +349,12 @@ class PackageFetcher {
         do {
             var r: Repository?
             try repeatedly("fetchRepository", retries: 3) {
-                r = try fetchRepository().get()
-                return .success
+                do {
+                    r = try fetchRepository().get()
+                    return .success
+                } catch {
+                    return .failure
+                }
             }
             guard let repo = r else { throw ValidatorError.timedOut }
             let packageURL = try getPackageSwiftURL(repository: repo).get()
