@@ -108,6 +108,7 @@ func downloadSync(url: String) -> Result<Data, ValidatorError> {
     if let token = patToken, apiURL.absoluteString.starts(with: "https://api.github.com") {
         request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     }
+    request.addValue("SPI-Nightly", forHTTPHeaderField: "User-Agent")
     
     let task = session.dataTask(with: request) { (data, response, error) in
         
